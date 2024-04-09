@@ -1,0 +1,33 @@
+[tool.poetry]
+name = "ufanet"
+version = "0.1.1alpha"
+description = ""
+authors = []
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+torch = {version = "^2.2.1", source = "pytorch_cpu"}
+albumentations = "^1.4.1"
+lightning = "^2.2.1"
+torchvision = {version = "^0.17.1", source = "pytorch_cpu"}
+black = "^24.2.0"
+isort = "^5.13.2"
+flake8 = "^7.0.0"
+pandas = "^2.2.1"
+scikit-learn = "^1.4.1.post1"
+
+
+[tool.poetry.group.dev.dependencies]
+ipykernel = "^6.29.3"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+
+[[tool.poetry.source]]
+name = "pytorch_cpu"
+url = "https://download.pytorch.org/whl/cpu"
+priority = "explicit"
+
