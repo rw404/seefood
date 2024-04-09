@@ -3,7 +3,7 @@ default_language_version:
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.5.0
+    rev: v4.6.0
     hooks:
       - id: check-yaml
       - id: check-json
@@ -14,7 +14,7 @@ repos:
       - id: mixed-line-ending
 
   - repo: https://github.com/psf/black
-    rev: 23.12.1
+    rev: 24.3.0
     hooks:
       - id: black
 
@@ -24,14 +24,14 @@ repos:
       - id: isort
 
   - repo: https://github.com/pycqa/flake8
-    rev: 6.1.0
+    rev: 7.0.0
     hooks:
       - id: flake8
         additional_dependencies: [flake8-bugbear]
         args: [--max-line-length=88] # black style
 
   - repo: https://github.com/nbQA-dev/nbQA
-    rev: 1.7.1
+    rev: 1.8.5
     hooks:
       - id: nbqa-black
         additional_dependencies: [black==22.3.0]
@@ -48,7 +48,7 @@ repos:
         args: [--print-width=80, --prose-wrap=always]
 
   - repo: https://github.com/pycqa/pydocstyle
-    rev: 4.0.0 # pick a git hash / tag to point to
+    rev: 6.3.0 # pick a git hash / tag to point to
     hooks:
       - id: pydocstyle
         args:
