@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ufanet.model &mdash; UfaNet  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=92fd9be5" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
+
+
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+
+        <script src="../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script src="../../_static/design-tabs.js?v=36754332"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+</head>
+
+<body class="wy-body-for-nav">
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+
+
+          <a href="../../index.html" class="icon icon-home">
+            UfaNet
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../ufanet.html">UfaNet package</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">UfaNet</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">ufanet.model</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+
+  <h1>Source code for ufanet.model</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">os</span>
+
+<span class="kn">import</span> <span class="nn">albumentations</span> <span class="k">as</span> <span class="nn">A</span>
+<span class="kn">import</span> <span class="nn">albumentations.pytorch</span> <span class="k">as</span> <span class="nn">Ap</span>
+<span class="kn">import</span> <span class="nn">lightning</span> <span class="k">as</span> <span class="nn">L</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">torchvision</span>
+<span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span>
+<span class="kn">from</span> <span class="nn">skimage.io</span> <span class="kn">import</span> <span class="n">imread</span>
+<span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="kn">import</span> <span class="n">accuracy_score</span><span class="p">,</span> <span class="n">confusion_matrix</span>
+<span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="kn">import</span> <span class="n">train_test_split</span>
+<span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">nn</span>
+<span class="kn">from</span> <span class="nn">torch.nn</span> <span class="kn">import</span> <span class="n">functional</span> <span class="k">as</span> <span class="n">F</span>
+<span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="kn">import</span> <span class="n">DataLoader</span><span class="p">,</span> <span class="n">Dataset</span>
+
+<span class="c1"># Augmentation</span>
+
+<span class="n">train_tfms</span> <span class="o">=</span> <span class="n">A</span><span class="o">.</span><span class="n">Compose</span><span class="p">(</span>
+    <span class="p">[</span>
+        <span class="n">A</span><span class="o">.</span><span class="n">Resize</span><span class="p">(</span>
+            <span class="n">height</span><span class="o">=</span><span class="mi">224</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">224</span>
+        <span class="p">),</span>  <span class="c1"># T.RandomResizedCrop(size=256, scale=(0.8, 1.0)),</span>
+        <span class="n">A</span><span class="o">.</span><span class="n">Flip</span><span class="p">(),</span>
+        <span class="n">A</span><span class="o">.</span><span class="n">RandomBrightnessContrast</span><span class="p">(),</span>
+        <span class="n">A</span><span class="o">.</span><span class="n">Rotate</span><span class="p">(</span><span class="n">limit</span><span class="o">=</span><span class="mi">10</span><span class="p">),</span>
+        <span class="n">A</span><span class="o">.</span><span class="n">Normalize</span><span class="p">(),</span>
+        <span class="n">Ap</span><span class="o">.</span><span class="n">ToTensorV2</span><span class="p">(),</span>
+    <span class="p">]</span>
+<span class="p">)</span>
+
+<span class="n">test_tfms</span> <span class="o">=</span> <span class="n">A</span><span class="o">.</span><span class="n">Compose</span><span class="p">([</span><span class="n">A</span><span class="o">.</span><span class="n">Resize</span><span class="p">(</span><span class="n">height</span><span class="o">=</span><span class="mi">224</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">224</span><span class="p">),</span> <span class="n">A</span><span class="o">.</span><span class="n">Normalize</span><span class="p">(),</span> <span class="n">Ap</span><span class="o">.</span><span class="n">ToTensorV2</span><span class="p">()])</span>
+
+<span class="n">IMG_SIZE</span> <span class="o">=</span> <span class="mi">224</span>
+
+
+<span class="c1"># Dataset class</span>
+<div class="viewcode-block" id="MyCustomDataset">
+<a class="viewcode-back" href="../../ufanet.html#ufanet.model.MyCustomDataset">[docs]</a>
+<span class="k">class</span> <span class="nc">MyCustomDataset</span><span class="p">(</span><span class="n">Dataset</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;MNIST CNN</span>
+
+<span class="sd">    Model architecture</span>
+<span class="sd">       ===== ===== ====== ======</span>
+<span class="sd">       Layer Name  Type   Params</span>
+<span class="sd">       ===== ===== ====== ======</span>
+<span class="sd">       0     conv1 Conv2d 320</span>
+<span class="sd">       1     conv2 Conv2d 18.5K</span>
+<span class="sd">       2     conv3 Conv2d 55.4K</span>
+<span class="sd">       3     fc1   Linear 442K</span>
+<span class="sd">       4     fc2   Linear 65.7K</span>
+<span class="sd">       5     fc3   Linear 1.3K</span>
+<span class="sd">       ===== ===== ====== ======</span>
+
+<span class="sd">       * 584 K     Trainable params</span>
+<span class="sd">       * 0         Non-trainable params</span>
+<span class="sd">       * 584 K     Total params</span>
+<span class="sd">       * 2.336     Total estimated model params size (MB)</span>
+
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">img_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">label_root_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">train_fraction</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.8</span>
+    <span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">=</span> <span class="n">mode</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">img_dir</span> <span class="o">=</span> <span class="n">img_dir</span>
+
+        <span class="n">label_name</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;train&quot;</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;val&quot;</span><span class="p">:</span>
+            <span class="n">label_name</span> <span class="o">=</span> <span class="s2">&quot;train.csv&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">label_name</span> <span class="o">=</span> <span class="s2">&quot;test.csv&quot;</span>
+        <span class="n">label_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">label_root_dir</span><span class="p">,</span> <span class="n">label_name</span><span class="p">)</span>
+
+        <span class="n">image_label_info</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">label_dir</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_buf</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">mode</span> <span class="o">!=</span> <span class="s2">&quot;test&quot;</span><span class="p">:</span>
+            <span class="n">train_subset</span><span class="p">,</span> <span class="n">val_subset</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span>
+                <span class="n">image_label_info</span><span class="p">,</span>
+                <span class="n">train_size</span><span class="o">=</span><span class="n">train_fraction</span><span class="p">,</span>
+                <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">,</span>
+                <span class="n">stratify</span><span class="o">=</span><span class="n">image_label_info</span><span class="o">.</span><span class="n">label</span><span class="o">.</span><span class="n">array</span><span class="p">,</span>
+            <span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;train&quot;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">data_buf</span> <span class="o">=</span> <span class="n">train_subset</span>
+                <span class="k">del</span> <span class="n">val_subset</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">data_buf</span> <span class="o">=</span> <span class="n">val_subset</span>
+                <span class="k">del</span> <span class="n">train_subset</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data_buf</span> <span class="o">=</span> <span class="n">image_label_info</span>
+
+    <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_buf</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
+
+        <span class="n">img_path</span><span class="p">,</span> <span class="n">label</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_buf</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+
+        <span class="c1"># img_path = self.img_dir + &quot;/&quot; + img_path</span>
+        <span class="n">img_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">img_dir</span><span class="p">,</span> <span class="n">img_path</span><span class="p">)</span>
+
+        <span class="c1">## read image</span>
+        <span class="n">image</span> <span class="o">=</span> <span class="n">imread</span><span class="p">(</span><span class="n">img_path</span><span class="p">)</span>
+
+        <span class="c1"># image = Image.fromarray(image)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;train&quot;</span><span class="p">:</span>
+            <span class="n">image</span> <span class="o">=</span> <span class="n">train_tfms</span><span class="p">(</span><span class="n">image</span><span class="o">=</span><span class="n">image</span><span class="p">)[</span><span class="s2">&quot;image&quot;</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">image</span> <span class="o">=</span> <span class="n">test_tfms</span><span class="p">(</span><span class="n">image</span><span class="o">=</span><span class="n">image</span><span class="p">)[</span><span class="s2">&quot;image&quot;</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">label</span> <span class="o">==</span> <span class="s2">&quot;twix&quot;</span><span class="p">:</span>
+            <span class="n">label</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">elif</span> <span class="n">label</span> <span class="o">==</span> <span class="s2">&quot;snickers&quot;</span><span class="p">:</span>
+            <span class="n">label</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">elif</span> <span class="n">label</span> <span class="o">==</span> <span class="s2">&quot;orbit&quot;</span><span class="p">:</span>
+            <span class="n">label</span> <span class="o">=</span> <span class="mi">2</span>
+
+        <span class="k">return</span> <span class="n">image</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">long</span><span class="p">)</span></div>
+
+
+
+<span class="k">class</span> <span class="nc">UfaNet</span><span class="p">(</span><span class="n">L</span><span class="o">.</span><span class="n">LightningModule</span><span class="p">):</span>
+    <span class="c1"># REQUIRED</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_shape</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">224</span><span class="p">,</span> <span class="mi">224</span><span class="p">),</span> <span class="n">num_classes</span><span class="o">=</span><span class="mi">50</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Define computations here. &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">net</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>  <span class="c1"># 224 -&gt; 224-5+1 + 2*1 = 220</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">MaxPool2d</span><span class="p">(</span><span class="n">kernel_size</span><span class="o">=</span><span class="mi">2</span><span class="p">),</span>  <span class="c1"># 220 -&gt; 110</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>  <span class="c1"># 112 -&gt; 112-5+1 = 108</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">MaxPool2d</span><span class="p">(</span><span class="n">kernel_size</span><span class="o">=</span><span class="mi">2</span><span class="p">),</span>  <span class="c1"># 108 -&gt; 54</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">16</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>  <span class="c1"># 54 -&gt; 54-5+1= 50</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">MaxPool2d</span><span class="p">(</span><span class="n">kernel_size</span><span class="o">=</span><span class="mi">2</span><span class="p">),</span>  <span class="c1"># 50 -&gt; 25</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="mi">16</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>  <span class="c1"># 25 -&gt; 25-5+1= 21</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">MaxPool2d</span><span class="p">(</span><span class="n">kernel_size</span><span class="o">=</span><span class="mi">2</span><span class="p">),</span>  <span class="c1"># 21 -&gt; 11</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>  <span class="c1"># 11 -&gt; 11-5+1= 7</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">MaxPool2d</span><span class="p">(</span><span class="n">kernel_size</span><span class="o">=</span><span class="mi">2</span><span class="p">),</span>  <span class="c1"># 7 -&gt; 4</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">Flatten</span><span class="p">(),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">4</span> <span class="o">*</span> <span class="mi">4</span> <span class="o">*</span> <span class="mi">32</span><span class="p">,</span> <span class="mi">128</span><span class="p">),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">dim</span> <span class="o">=</span> <span class="n">input_shape</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">loss</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">cross_entropy</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">accuracy</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">y_logit</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">accuracy_score</span><span class="p">(</span>
+            <span class="n">y</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">(),</span>
+            <span class="n">y_logit</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">(),</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">confusion_matrix</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">y_logit</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">confusion_matrix</span><span class="p">(</span>
+            <span class="n">y</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">(),</span>
+            <span class="n">y_logit</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">(),</span>
+            <span class="n">labels</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">training_step_outputs</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">validation_step_outputs</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="c1"># REQUIRED</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Model process</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        x: torch.Tensor</span>
+<span class="sd">            input data of size [batch_size, 3, 28, 28]</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        x: torch.Tensor</span>
+<span class="sd">            Tensor of size [batch_size, 10] of probabilities logits</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">x</span>
+
+    <span class="c1"># REQUIRED</span>
+    <span class="k">def</span> <span class="nf">training_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">batch_idx</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;the full training loop&quot;&quot;&quot;</span>
+        <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">batch</span>
+
+        <span class="n">y_logit</span> <span class="o">=</span> <span class="bp">self</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">loss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">loss</span><span class="p">(</span><span class="n">y_logit</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+
+        <span class="n">acc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">accuracy</span><span class="p">(</span><span class="n">y_logit</span><span class="o">=</span><span class="n">y_logit</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">y</span><span class="p">)</span>
+
+        <span class="n">output</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;loss&quot;</span><span class="p">:</span> <span class="n">loss</span><span class="p">,</span> <span class="s2">&quot;acc&quot;</span><span class="p">:</span> <span class="n">acc</span><span class="p">}</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">training_step_outputs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">output</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s2">&quot;train_loss&quot;</span><span class="p">,</span> <span class="n">loss</span><span class="p">,</span> <span class="n">on_step</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">on_epoch</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">prog_bar</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s2">&quot;train_acc&quot;</span><span class="p">,</span> <span class="n">acc</span><span class="p">,</span> <span class="n">on_step</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">on_epoch</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">prog_bar</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">output</span>
+
+    <span class="c1"># REQUIRED</span>
+    <span class="k">def</span> <span class="nf">configure_optimizers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Define optimizers and LR schedulers.&quot;&quot;&quot;</span>
+        <span class="n">optimizer</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">Adam</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">,</span> <span class="n">weight_decay</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="p">[</span><span class="n">optimizer</span><span class="p">]</span>
+
+    <span class="c1"># OPTIONAL</span>
+    <span class="k">def</span> <span class="nf">validation_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">batch_idx</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;the full validation loop&quot;&quot;&quot;</span>
+        <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">batch</span>
+
+        <span class="n">y_logit</span> <span class="o">=</span> <span class="bp">self</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cm</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">confusion_matrix</span><span class="p">(</span><span class="n">y</span><span class="o">=</span><span class="n">y</span><span class="p">,</span> <span class="n">y_logit</span><span class="o">=</span><span class="n">y_logit</span><span class="p">)</span>
+
+        <span class="n">val_acc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">accuracy</span><span class="p">(</span><span class="n">y_logit</span><span class="o">=</span><span class="n">y_logit</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">y</span><span class="p">)</span>
+
+        <span class="n">loss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">loss</span><span class="p">(</span><span class="n">y_logit</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;val_loss&quot;</span><span class="p">:</span> <span class="n">loss</span><span class="p">,</span> <span class="s2">&quot;val_acc&quot;</span><span class="p">:</span> <span class="n">val_acc</span><span class="p">}</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">validation_step_outputs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">output</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s2">&quot;val_loss&quot;</span><span class="p">,</span> <span class="n">loss</span><span class="p">,</span> <span class="n">on_step</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">on_epoch</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">prog_bar</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s2">&quot;val_acc&quot;</span><span class="p">,</span> <span class="n">val_acc</span><span class="p">,</span> <span class="n">on_step</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">on_epoch</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">prog_bar</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">output</span>
+
+    <span class="k">def</span> <span class="nf">test_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">batch_idx</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">validation_step</span><span class="p">(</span><span class="n">batch</span><span class="o">=</span><span class="n">batch</span><span class="p">,</span> <span class="n">batch_idx</span><span class="o">=</span><span class="n">batch_idx</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">on_train_epoch_end</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Model training epoch end</span>
+
+<span class="sd">        * Calculate average loss &amp; accuracy scores;</span>
+<span class="sd">        * Log them &amp; pring.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">avg_loss</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span>
+            <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="s2">&quot;loss&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">training_step_outputs</span><span class="p">]</span>
+        <span class="p">)</span>
+        <span class="n">avg_loss</span> <span class="o">=</span> <span class="n">avg_loss</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+
+        <span class="n">avg_acc</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span>
+            <span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="s2">&quot;acc&quot;</span><span class="p">])</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">training_step_outputs</span><span class="p">]</span>
+        <span class="p">)</span>
+        <span class="n">avg_acc</span> <span class="o">=</span> <span class="n">avg_acc</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+
+        <span class="n">Accuracy</span> <span class="o">=</span> <span class="mi">100</span> <span class="o">*</span> <span class="n">avg_acc</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">training_step_outputs</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;| Train_loss: </span><span class="si">{</span><span class="n">avg_loss</span><span class="si">:</span><span class="s2">.5f</span><span class="si">}</span><span class="s2"> Train_acc: </span><span class="si">{</span><span class="n">Accuracy</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">%&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span>
+            <span class="s2">&quot;train_average_loss&quot;</span><span class="p">,</span> <span class="n">avg_loss</span><span class="p">,</span> <span class="n">prog_bar</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">on_epoch</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">on_step</span><span class="o">=</span><span class="kc">False</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span>
+            <span class="s2">&quot;train_average_acc&quot;</span><span class="p">,</span> <span class="n">avg_acc</span><span class="p">,</span> <span class="n">prog_bar</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">on_epoch</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">on_step</span><span class="o">=</span><span class="kc">False</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">on_validation_epoch_end</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Model validation epoch end</span>
+
+<span class="sd">        * Calculate average loss &amp; accuracy scores;</span>
+<span class="sd">        * Log them &amp; pring.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">avg_loss</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span>
+            <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="s2">&quot;val_loss&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">validation_step_outputs</span><span class="p">]</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+        <span class="n">avg_acc</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span>
+            <span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="s2">&quot;val_acc&quot;</span><span class="p">])</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">validation_step_outputs</span><span class="p">]</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+        <span class="n">Accuracy</span> <span class="o">=</span> <span class="mi">100</span> <span class="o">*</span> <span class="n">avg_acc</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">validation_step_outputs</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+
+        <span class="nb">print</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;[Epoch </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">current_epoch</span><span class="si">:</span><span class="s2">3</span><span class="si">}</span><span class="s2">] &quot;</span>
+            <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;Val_loss: </span><span class="si">{</span><span class="n">avg_loss</span><span class="si">:</span><span class="s2">.5f</span><span class="si">}</span><span class="s2"> &quot;</span>
+            <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;Val_accuracy: </span><span class="si">{</span><span class="n">Accuracy</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">%&quot;</span><span class="p">,</span>
+            <span class="n">end</span><span class="o">=</span><span class="s2">&quot; &quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span>
+            <span class="s2">&quot;val_average_loss&quot;</span><span class="p">,</span> <span class="n">avg_loss</span><span class="p">,</span> <span class="n">prog_bar</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">on_epoch</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">on_step</span><span class="o">=</span><span class="kc">False</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span>
+            <span class="s2">&quot;val_average_acc&quot;</span><span class="p">,</span> <span class="n">avg_acc</span><span class="p">,</span> <span class="n">prog_bar</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">on_epoch</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">on_step</span><span class="o">=</span><span class="kc">False</span>
+        <span class="p">)</span>
+        <span class="nb">print</span><span class="p">()</span>
+        <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cm</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">on_test_epoch_end</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">on_validation_epoch_end</span><span class="p">()</span>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">dataset_train</span> <span class="o">=</span> <span class="n">MyCustomDataset</span><span class="p">(</span>
+        <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;train&quot;</span><span class="p">,</span> <span class="n">img_dir</span><span class="o">=</span><span class="s2">&quot;candies/data/train&quot;</span><span class="p">,</span> <span class="n">label_root_dir</span><span class="o">=</span><span class="s2">&quot;candies&quot;</span>
+    <span class="p">)</span>
+    <span class="n">dataset_val</span> <span class="o">=</span> <span class="n">MyCustomDataset</span><span class="p">(</span>
+        <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;val&quot;</span><span class="p">,</span> <span class="n">img_dir</span><span class="o">=</span><span class="s2">&quot;candies/data/train&quot;</span><span class="p">,</span> <span class="n">label_root_dir</span><span class="o">=</span><span class="s2">&quot;candies&quot;</span>
+    <span class="p">)</span>
+    <span class="n">dataset_test</span> <span class="o">=</span> <span class="n">MyCustomDataset</span><span class="p">(</span>
+        <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;test&quot;</span><span class="p">,</span> <span class="n">img_dir</span><span class="o">=</span><span class="s2">&quot;candies/data/test&quot;</span><span class="p">,</span> <span class="n">label_root_dir</span><span class="o">=</span><span class="s2">&quot;candies&quot;</span>
+    <span class="p">)</span>
+
+    <span class="n">dl_train</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span>
+        <span class="n">dataset_train</span><span class="p">,</span>
+        <span class="n">batch_size</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+        <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">num_workers</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+        <span class="n">persistent_workers</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">dl_val</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span>
+        <span class="n">dataset_val</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">num_workers</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">persistent_workers</span><span class="o">=</span><span class="kc">True</span>
+    <span class="p">)</span>
+    <span class="n">dl_test</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span>
+        <span class="n">dataset_test</span><span class="p">,</span>
+        <span class="n">batch_size</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+        <span class="n">shuffle</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">num_workers</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+        <span class="n">persistent_workers</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">ufaNetPomenbshe</span> <span class="o">=</span> <span class="n">UfaNet</span><span class="p">()</span>
+
+    <span class="c1"># Checkpoints</span>
+    <span class="n">MyModelCheckpoint</span> <span class="o">=</span> <span class="n">L</span><span class="o">.</span><span class="n">pytorch</span><span class="o">.</span><span class="n">callbacks</span><span class="o">.</span><span class="n">ModelCheckpoint</span><span class="p">(</span>
+        <span class="n">dirpath</span><span class="o">=</span><span class="s2">&quot;./runs/&quot;</span><span class="p">,</span>
+        <span class="n">filename</span><span class="o">=</span><span class="s2">&quot;best&quot;</span><span class="p">,</span>
+        <span class="n">monitor</span><span class="o">=</span><span class="s2">&quot;val_average_acc&quot;</span><span class="p">,</span>
+        <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;max&quot;</span><span class="p">,</span>
+        <span class="n">save_top_k</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">training</span> <span class="o">=</span> <span class="n">L</span><span class="o">.</span><span class="n">Trainer</span><span class="p">(</span>
+        <span class="n">max_epochs</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">accelerator</span><span class="o">=</span><span class="s2">&quot;cpu&quot;</span><span class="p">,</span>
+        <span class="n">devices</span><span class="o">=</span><span class="s2">&quot;auto&quot;</span><span class="p">,</span>
+        <span class="n">logger</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">callbacks</span><span class="o">=</span><span class="p">[</span><span class="n">MyModelCheckpoint</span><span class="p">],</span>
+    <span class="p">)</span>
+
+    <span class="n">training</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">ufaNetPomenbshe</span><span class="p">,</span> <span class="n">dl_train</span><span class="p">,</span> <span class="n">dl_val</span><span class="p">)</span>
+    <span class="n">training</span><span class="o">.</span><span class="n">test</span><span class="p">(</span><span class="n">ckpt_path</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;./runs/best-v11.ckpt&quot;</span><span class="p">,</span> <span class="n">dataloaders</span><span class="o">=</span><span class="n">dl_test</span><span class="p">)</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, unk.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+</body>
+</html>
