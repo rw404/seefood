@@ -1,0 +1,59 @@
+name: Docs
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build_docs:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: true
+      matrix:
+        os: [ubuntu-latest]
+        python-version: ["3.11"]
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v3
+        with:
+          python-version: "3.11"
+
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          virtualenvs-create: false
+          virtualenvs-in-project: false
+
+      - name: Install library
+        run: poetry install --no-interaction --with docs --no-root
+
+      - name: Build docs
+        run: |
+          cd docs && poetry run make html
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: DocumentationHTML
+          path: docs/_build/html/
+
+      - name: Commit documentation changes
+        run: |
+          git clone https://github.com/rw404/seefood.git --branch gh-pages --single-branch gh-pages
+          cp -r docs/_build/html/* gh-pages
+          cd gh-pages
+          touch .nojekyll
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add .
+          git commit -m "Update documentation" -a || true
+          # The above command will fail if no changes were present, so we ignore
+          # the return code.
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          branch: gh-pages
+          directory: gh-pages
+          github_token: ${{ secrets.GITHUB_TOKEN }}
