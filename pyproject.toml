@@ -8,8 +8,9 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.11"
 torch = [
-    {version = "^2.2.1", markers = "sys_platform == 'darwin'"},
-    {version = "^2.2.1", markers = "sys_platform != 'darwin'", source = "pytorch_cpu"}
+    { platform = "darwin", version = "2.2.1", source = "pypidefault" },
+    { platform = "linux", version = "2.2.1+cpu", source = "pytorch_cpu" },
+    { platform = "win32", version = "2.2.1+cpu", source = "pytorch_cpu" }
 ]
 
 albumentations = "^1.4.1"
@@ -37,8 +38,11 @@ sphinx-rtd-theme = "^2.0.0"
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
+[[tool.poetry.source]]
+name = "pypidefault"
+priority = "primary"
 
 [[tool.poetry.source]]
 name = "pytorch_cpu"
 url = "https://download.pytorch.org/whl/cpu"
-priority = "explicit"
+priority = "supplemental"
