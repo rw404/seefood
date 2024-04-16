@@ -1,0 +1,163 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2024, unk
+# This file is distributed under the same license as the UfaNet package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2024.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: UfaNet \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-04-16 12:40+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: ru\n"
+"Language-Team: ru <LL@li.org>\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
+"n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.14.0\n"
+
+#: ../../source/ufanet.rst:2
+msgid "SeeFood package"
+msgstr "Пакет SeeFood"
+
+#: ../../source/ufanet.rst:5
+msgid "Submodules"
+msgstr "Подмодули"
+
+#: ../../source/ufanet.rst:8
+msgid "SeeFood.data module"
+msgstr "Модуль SeeFood.data"
+
+#: of seefood.data.MyCustomDataset:1
+msgid "Bases: :py:class:`~torch.utils.data.dataset.Dataset`"
+msgstr "Bases: :py:class:`~torch.utils.data.dataset.Dataset`"
+
+#: of seefood.data.MyCustomDataset:2
+msgid "Dataset class."
+msgstr "Класс набора данных"
+
+#: ../../source/ufanet.rst:15
+msgid "SeeFood.model module"
+msgstr "Модуль SeeFood.model"
+
+#: of seefood.model.UfaNet:1
+msgid "Bases: :py:class:`~lightning.LightningModule`"
+msgstr "Bases: :py:class:`~lightning.LightningModule`"
+
+#: of seefood.model.UfaNet:2
+msgid "Simple CNN Lightning Module."
+msgstr "Модуль Simple CNN Lightning"
+
+#: of seefood.model.UfaNet:19
+msgid "Methods"
+msgstr "Методы"
+
+#: of seefood.model.UfaNet:32:<autosummary>:1
+msgid ""
+":py:obj:`__call__ <seefood.model.UfaNet.__call__>`\\ \\(\\*args\\, "
+"\\*\\*kwargs\\)"
+msgstr ""
+":py:obj:`__call__ <seefood.model.UfaNet.__call__>`\\ \\(\\*args\\, "
+"\\*\\*kwargs\\)"
+
+#: of seefood.model.UfaNet:32:<autosummary>:1
+msgid ""
+":py:obj:`configure_optimizers "
+"<seefood.model.UfaNet.configure_optimizers>`\\ \\(\\)"
+msgstr ""
+":py:obj:`configure_optimizers "
+"<seefood.model.UfaNet.configure_optimizers>`\\ \\(\\)"
+
+#: of seefood.model.UfaNet.configure_optimizers:2
+#: seefood.model.UfaNet:32:<autosummary>:1
+msgid "Define optimizers and LR schedulers."
+msgstr "Определение оптимизаторов и шедулеров"
+
+#: of seefood.model.UfaNet:32:<autosummary>:1
+msgid ":py:obj:`forward <seefood.model.UfaNet.forward>`\\ \\(x\\)"
+msgstr ":py:obj:`forward <seefood.model.UfaNet.forward>`\\ \\(x\\)"
+
+#: of seefood.model.UfaNet.forward:2 seefood.model.UfaNet:32:<autosummary>:1
+msgid "Forward pass of simple CNN."
+msgstr "Прямой проход simple CNN"
+
+#: of seefood.model.UfaNet:32:<autosummary>:1
+msgid ""
+":py:obj:`on_test_epoch_end <seefood.model.UfaNet.on_test_epoch_end>`\\ "
+"\\(\\)"
+msgstr ""
+":py:obj:`on_test_epoch_end <seefood.model.UfaNet.on_test_epoch_end>`\\ "
+"\\(\\)"
+
+#: of seefood.model.UfaNet.on_test_epoch_end:2
+#: seefood.model.UfaNet:32:<autosummary>:1
+msgid "Test epoch end callback."
+msgstr "Конец эпохи (тестирование)"
+
+#: of seefood.model.UfaNet:32:<autosummary>:1
+msgid ""
+":py:obj:`on_train_epoch_end <seefood.model.UfaNet.on_train_epoch_end>`\\ "
+"\\(\\)"
+msgstr ""
+":py:obj:`on_train_epoch_end <seefood.model.UfaNet.on_train_epoch_end>`\\ "
+"\\(\\)"
+
+#: of seefood.model.UfaNet.on_train_epoch_end:2
+#: seefood.model.UfaNet:32:<autosummary>:1
+msgid "Train epoch end callback."
+msgstr "Конец эпохи (обучение)"
+
+#: of seefood.model.UfaNet:32:<autosummary>:1
+msgid ""
+":py:obj:`on_validation_epoch_end "
+"<seefood.model.UfaNet.on_validation_epoch_end>`\\ \\(\\)"
+msgstr ""
+":py:obj:`on_validation_epoch_end "
+"<seefood.model.UfaNet.on_validation_epoch_end>`\\ \\(\\)"
+
+#: of seefood.model.UfaNet.on_validation_epoch_end:2
+#: seefood.model.UfaNet:32:<autosummary>:1
+msgid "Model validation epoch end."
+msgstr "Конец эпохи (валидация)"
+
+#: of seefood.model.UfaNet:32:<autosummary>:1
+msgid ""
+":py:obj:`test_step <seefood.model.UfaNet.test_step>`\\ \\(batch\\, "
+"batch\\_idx\\)"
+msgstr ""
+":py:obj:`test_step <seefood.model.UfaNet.test_step>`\\ \\(batch\\, "
+"batch\\_idx\\)"
+
+#: of seefood.model.UfaNet.test_step:2 seefood.model.UfaNet:32:<autosummary>:1
+msgid "Test step callabck."
+msgstr "Шаг тестирования"
+
+#: of seefood.model.UfaNet:32:<autosummary>:1
+msgid ""
+":py:obj:`training_step <seefood.model.UfaNet.training_step>`\\ "
+"\\(batch\\, batch\\_idx\\)"
+msgstr ""
+":py:obj:`training_step <seefood.model.UfaNet.training_step>`\\ "
+"\\(batch\\, batch\\_idx\\)"
+
+#: of seefood.model.UfaNet.training_step:2
+#: seefood.model.UfaNet:32:<autosummary>:1
+msgid "Train step callback."
+msgstr "Шаг обучения"
+
+#: of seefood.model.UfaNet:32:<autosummary>:1
+msgid ""
+":py:obj:`validation_step <seefood.model.UfaNet.validation_step>`\\ "
+"\\(batch\\, batch\\_idx\\)"
+msgstr ""
+":py:obj:`validation_step <seefood.model.UfaNet.validation_step>`\\ "
+"\\(batch\\, batch\\_idx\\)"
+
+#: of seefood.model.UfaNet.validation_step:2
+#: seefood.model.UfaNet:32:<autosummary>:1
+msgid "Validate step callback."
+msgstr "Шаг валидации"
