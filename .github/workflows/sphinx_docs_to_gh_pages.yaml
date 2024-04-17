@@ -27,6 +27,9 @@ jobs:
           virtualenvs-create: false
           virtualenvs-in-project: false
 
+      - name: Correct lock file
+        run: poetry lock --no-update
+
       - name: Install library
         run: poetry install --no-interaction --with docs --no-root
 
