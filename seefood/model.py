@@ -7,11 +7,19 @@ from torch.nn import functional as F
 
 
 class UfaNet(L.LightningModule):
-    """Simple CNN Lightning Module."""
+    """Модель классификации конфет."""
 
     def __init__(self, input_shape=(3, 224, 224), num_classes=50):
-        """Init Simple CNN class."""
+        """Инициализация полей класса, необходимых для обучения.
+
+        Args:
+            input_shape (tuple, optional): Размер входного изображения
+            num_classes (int, optional): Количество предсказываемых классов
+        """
+
         super().__init__()
+
+        # Архитектура сверточной модели (3х224х224) -> (3)
         self.net = nn.Sequential(
             nn.Conv2d(3, 8, kernel_size=5, stride=1),  # 224 -> 224-5+1 + 2*1 = 220
             nn.MaxPool2d(kernel_size=2),  # 220 -> 110
@@ -34,68 +42,104 @@ class UfaNet(L.LightningModule):
             nn.Linear(128, 3),
         )
 
-        self.dim = input_shape
+        # Confusion матрица
         self.cm = np.zeros((3, 3))
-
-        self.loss = F.cross_entropy
-
-        self.accuracy = lambda y_logit, y: accuracy_score(
-            y.flatten().detach().cpu().numpy(),
-            y_logit.argmax(dim=-1).flatten().detach().cpu().numpy(),
-        )
         self.confusion_matrix = lambda y_logit, y: confusion_matrix(
             y.flatten().detach().cpu().numpy(),
             y_logit.argmax(dim=-1).flatten().detach().cpu().numpy(),
             labels=[0, 1, 2],
         )
 
+        # Инициализация функции потерь
+        self.loss = F.cross_entropy
+
+        # Инициализация метрики
+        self.accuracy = lambda y_logit, y: accuracy_score(
+            y.flatten().detach().cpu().numpy(),
+            y_logit.argmax(dim=-1).flatten().detach().cpu().numpy(),
+        )
+
         self.training_step_outputs = []
         self.validation_step_outputs = []
 
-    # REQUIRED
+    def configure_optimizers(self):
+        """Инициализация оптимизатора."""
+        optimizer = torch.optim.Adam(self.parameters(), lr=1e-4, weight_decay=1e-6)
+
+        return [optimizer]
+
     def forward(self, x):
-        """Forward pass of simple CNN."""
+        """Применение модели.
+
+        Args:
+            x (torch.tensor): Входной тензор
+
+        Returns:
+            torch.tensor: Результат работы модели
+        """
+
         x = self.net(x)
         return x
 
-    # REQUIRED
     def training_step(self, batch, batch_idx):
-        """Train step callback."""
+        """Шаг тренировки.
+
+        Args:
+            batch (tuple): Входные данные и лейблы
+            batch_idx (int): Номер батча
+
+        Returns:
+            dict: Значения метрики и ошибки
+        """
+
+        # Считываем данные и лейблы
         x, y = batch
 
+        # Применяем модель к данным
         y_logit = self(x)
+
+        # Считаем ошибку
         loss = self.loss(y_logit, y)
 
+        # Считаем мтерику
         acc = self.accuracy(y_logit=y_logit, y=y)
 
+        # Сохраняем значения ошибки и метрики
         output = {"loss": loss, "acc": acc}
-
         self.training_step_outputs.append(output)
         self.log("train_loss", loss, on_step=True, on_epoch=False, prog_bar=True)
         self.log("train_acc", acc, on_step=True, on_epoch=False, prog_bar=True)
 
         return output
 
-    # REQUIRED
-    def configure_optimizers(self):
-        """Define optimizers and LR schedulers."""
-        optimizer = torch.optim.Adam(self.parameters(), lr=1e-4, weight_decay=1e-6)
-
-        return [optimizer]
-
-    # OPTIONAL
     def validation_step(self, batch, batch_idx):
-        """Validate step callback."""
+        """Шаг валидации.
+
+        Args:
+            batch (tuple): Входные данные и лейблы
+            batch_idx (int): Номер батча
+
+        Returns:
+            dict: Значения метрики и ошибки
+        """
+
+        # Считываем данные и лейблы
         x, y = batch
 
+        # Применяем модель к данным
         y_logit = self(x)
-        self.cm += self.confusion_matrix(y=y, y_logit=y_logit)
 
+        # Считаем ошибку
+        loss = self.loss(y_logit, y)
+
+        # Считаем метрику
         val_acc = self.accuracy(y_logit=y_logit, y=y)
 
-        loss = self.loss(y_logit, y)
-        output = {"val_loss": loss, "val_acc": val_acc}
+        # Изменяем confusion матрицу
+        self.cm += self.confusion_matrix(y=y, y_logit=y_logit)
 
+        # Сохраняем значения ошибки и метрики
+        output = {"val_loss": loss, "val_acc": val_acc}
         self.validation_step_outputs.append(output)
         self.log("val_loss", loss, on_step=True, on_epoch=True, prog_bar=False)
         self.log("val_acc", val_acc, on_step=True, on_epoch=True, prog_bar=False)
@@ -103,11 +147,23 @@ class UfaNet(L.LightningModule):
         return output
 
     def test_step(self, batch, batch_idx):
-        """Test step callabck."""
+        """Шаг Тестирования.
+
+        Args:
+            batch (tuple): Входные данные и лейблы
+            batch_idx (int): Номер батча
+
+        Returns:
+            dict: Значения метрики и ошибки
+        """
+
+        # Аналогичен шагу валидации, но с тестовыми данными
         return self.validation_step(batch=batch, batch_idx=batch_idx)
 
     def on_train_epoch_end(self) -> None:
-        """Train epoch end callback."""
+        """Конец эпохи обучения."""
+
+        # Сохранение метрик эпохи обучения
         avg_loss = torch.stack(
             [x["loss"].clone().detach() for x in self.training_step_outputs]
         )
@@ -132,7 +188,8 @@ class UfaNet(L.LightningModule):
         )
 
     def on_validation_epoch_end(self) -> None:
-        """Model validation epoch end."""
+        """Конец эпохи валидации."""
+        # Сохранение метрик валидации эпохи валидации
         avg_loss = torch.stack(
             [x["val_loss"].clone().detach() for x in self.validation_step_outputs]
         ).mean()
@@ -161,5 +218,5 @@ class UfaNet(L.LightningModule):
         self.cm = np.zeros((3, 3))
 
     def on_test_epoch_end(self) -> None:
-        """Test epoch end callback."""
+        """Конец эпохи тестирования."""
         return self.on_validation_epoch_end()
