@@ -1,8 +1,9 @@
 import lightning as L
 from augs import get_augmentations_transformations
-from data import MyCustomDataset
 from model import UfaNet
 from torch.utils.data import DataLoader
+
+from data import MyCustomDataset
 
 
 def main() -> None:
@@ -27,8 +28,8 @@ def main() -> None:
     # - tfms = train_transformations
     train_dataset = MyCustomDataset(
         mode="train",
-        img_dir="candies/data/train",
-        label_root_dir="candies",
+        img_dir="data/train",
+        label_root_dir="data",
         tfms=train_transformations,
     )
 
@@ -38,8 +39,8 @@ def main() -> None:
     # - tfms = test_transformations
     val_dataset = MyCustomDataset(
         mode="val",
-        img_dir="candies/data/train",
-        label_root_dir="candies",
+        img_dir="data/train",
+        label_root_dir="data",
         tfms=test_transformations,
     )
 
@@ -49,8 +50,8 @@ def main() -> None:
     # - tfms = test_transformations
     test_dataset = MyCustomDataset(
         mode="test",
-        img_dir="candies/data/test",
-        label_root_dir="candies",
+        img_dir="data/test",
+        label_root_dir="data",
         tfms=test_transformations,
     )
 
