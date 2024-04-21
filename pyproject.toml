@@ -20,6 +20,7 @@ torch = [
     { platform = "win32", version = "2.2.2+cpu", source = "pytorch_cpu" }
 ]
 torchvision = "0.17.2"
+dvc = {extras = ["gdrive"], version = "^3.50.0"}
 
 
 [tool.poetry.group.dev.dependencies]

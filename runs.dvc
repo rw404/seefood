@@ -1,0 +1,6 @@
+outs:
+- md5: 30b9b0c5e813cac3236a9e1345613633.dir
+  size: 1106923
+  nfiles: 1
+  hash: md5
+  path: runs
