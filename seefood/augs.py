@@ -1,10 +1,18 @@
+from typing import Tuple
+
 import albumentations as A
 import albumentations.pytorch as Ap
 
 
-def get_augs():
-    """Get train augs."""
-    train_tfms = A.Compose(
+def get_augmentations_transformations() -> Tuple[A.Compose, A.Compose]:
+    """Создать преобразования и аугментации для наборов данных
+
+    Returns:
+        Tuple[A.Compose, A.Compose]: Преобразования(аугментации) для тренировочной выборки и преобразования для тестовой выборки
+    """
+
+    # Создаем преобразования для тренировочной выборки(преобразования + аугментации)
+    train_transformations = A.Compose(
         [
             A.Resize(height=224, width=224),
             A.Flip(),
@@ -15,7 +23,8 @@ def get_augs():
         ]
     )
 
-    test_tfms = A.Compose(
+    # Создаем преобразования для тестировочной выборки(только преобразования)
+    test_transformations = A.Compose(
         [A.Resize(height=224, width=224), A.Normalize(), Ap.ToTensorV2()]
     )
-    return train_tfms, test_tfms
+    return train_transformations, test_transformations

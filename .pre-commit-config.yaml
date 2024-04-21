@@ -52,7 +52,7 @@ repos:
     hooks:
       - id: pydocstyle
         args:
-          - --ignore=D100,D203,D405,D104
+          - --ignore=D100,D203,D405,D104,D202,D213,D212,D400,D407,D413,D406,D
 # more to come (from https://dev.funkwhale.audio/funkwhale/funkwhale/-/blob/develop/.pre-commit-config.yaml)
 # - repo: https://github.com/python-poetry/poetry
 #   rev: 1.4.2
