@@ -50,6 +50,11 @@
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Пакет SeeFood</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#submodules">Подмодули</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-seefood.augs">SeeFood.augs module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#seefood.augs.get_augmentations_transformations"><code class="docutils literal notranslate"><span class="pre">get_augmentations_transformations()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#seefood-run-pipeline-module">SeeFood.run_pipeline module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#module-seefood.data">Модуль SeeFood.data</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#seefood.data.MyCustomDataset"><code class="docutils literal notranslate"><span class="pre">MyCustomDataset</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#seefood.data.MyCustomDataset.mode"><code class="docutils literal notranslate"><span class="pre">MyCustomDataset.mode</span></code></a></li>
@@ -108,6 +113,26 @@
 <h1>Пакет SeeFood<a class="headerlink" href="#seefood-package" title="Link to this heading"></a></h1>
 <section id="submodules">
 <h2>Подмодули<a class="headerlink" href="#submodules" title="Link to this heading"></a></h2>
+</section>
+<section id="module-seefood.augs">
+<span id="seefood-augs-module"></span><h2>SeeFood.augs module<a class="headerlink" href="#module-seefood.augs" title="Link to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="seefood.augs.get_augmentations_transformations">
+<span class="sig-prename descclassname"><span class="pre">seefood.augs.</span></span><span class="sig-name descname"><span class="pre">get_augmentations_transformations</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/seefood/augs.html#get_augmentations_transformations"><span class="viewcode-link"><span class="pre">[исходный</span> <span class="pre">код]</span></span></a><a class="headerlink" href="#seefood.augs.get_augmentations_transformations" title="Link to this definition"></a></dt>
+<dd><p>Создать преобразования и аугментации для наборов данных</p>
+<dl class="field-list simple">
+<dt class="field-odd">Результат<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Преобразования(аугментации) для тренировочной выборки и преобразования для тестовой выборки</p>
+</dd>
+<dt class="field-even">Тип результата<span class="colon">:</span></dt>
+<dd class="field-even"><p>Tuple[A.Compose, A.Compose]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="seefood-run-pipeline-module">
+<h2>SeeFood.run_pipeline module<a class="headerlink" href="#seefood-run-pipeline-module" title="Link to this heading"></a></h2>
 </section>
 <section id="module-seefood.data">
 <span id="seefood-data-module"></span><h2>Модуль SeeFood.data<a class="headerlink" href="#module-seefood.data" title="Link to this heading"></a></h2>
