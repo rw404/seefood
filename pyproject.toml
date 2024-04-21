@@ -34,6 +34,10 @@ sphinx-gallery = "^0.15.0"
 numpydoc = "^1.7.0"
 sphinx-rtd-theme = "^2.0.0"
 
+
+[tool.poetry.group.tests.dependencies]
+pytest = "^8.1.1"
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
