@@ -75,7 +75,9 @@
              
   <h1>Исходный код seefood.data</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Tuple</span>
 
+<span class="kn">import</span> <span class="nn">albumentations</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 <span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">from</span> <span class="nn">skimage.io</span> <span class="kn">import</span> <span class="n">imread</span>
@@ -86,32 +88,63 @@
 <div class="viewcode-block" id="MyCustomDataset">
 <a class="viewcode-back" href="../../ufanet.html#seefood.data.MyCustomDataset">[документация]</a>
 <span class="k">class</span> <span class="nc">MyCustomDataset</span><span class="p">(</span><span class="n">Dataset</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Dataset class.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Класс датасета для подгрузки данных.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        mode (str): Тип датасета: train, val, test</span>
+<span class="sd">        img_dir (str):  Путь до директории с изображениями.</span>
+<span class="sd">        tfms (albumentations.Compose): Трансформации изображений.</span>
+<span class="sd">        cls_name_to_id (dict): Словарь отображение названия класса в его метку.</span>
+<span class="sd">        {</span>
+<span class="sd">            &#39;twix&#39; : 0,</span>
+<span class="sd">            &#39;snickers&#39; : 1,</span>
+<span class="sd">            &#39;orbit&#39;: 2,</span>
+<span class="sd">        }</span>
+<span class="sd">        label_name (str): Название .csv файла с разметкой</span>
+<span class="sd">        data_buf (pd.DataFrame): Данные из файла с разметкой в виде pd.DataFrame</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">mode</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">img_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">label_root_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-        <span class="n">tfms</span><span class="p">,</span>
+        <span class="n">tfms</span><span class="p">:</span> <span class="n">albumentations</span><span class="o">.</span><span class="n">Compose</span><span class="p">,</span>
         <span class="n">train_fraction</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.8</span><span class="p">,</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Init class.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Инициализация объекта класса MyCustomDataset.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            mode (str): Тип датасета: train, val, test.</span>
+<span class="sd">            img_dir (str): Путь до директории с изображениями.</span>
+<span class="sd">            label_root_dir (str): Путь до .csv файлов с разметкой.</span>
+<span class="sd">            tfms (albumentations.Compose): Трансформации изображений.</span>
+<span class="sd">            train_fraction (float, optional): Размер тренирочной выборки. Дефолтное значение: 0.8.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">=</span> <span class="n">mode</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">img_dir</span> <span class="o">=</span> <span class="n">img_dir</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">tfms</span> <span class="o">=</span> <span class="n">tfms</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cls_name_to_id</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;twix&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="s2">&quot;snickers&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="s2">&quot;orbit&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+        <span class="p">}</span>
 
         <span class="n">label_name</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;train&quot;</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;val&quot;</span><span class="p">:</span>
             <span class="n">label_name</span> <span class="o">=</span> <span class="s2">&quot;train.csv&quot;</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">label_name</span> <span class="o">=</span> <span class="s2">&quot;test.csv&quot;</span>
+
+        <span class="c1"># получение полного пути до .csv файла с разметкой</span>
         <span class="n">label_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">label_root_dir</span><span class="p">,</span> <span class="n">label_name</span><span class="p">)</span>
 
+        <span class="c1"># чтение разметки из .csv файла в pd.Dataframe</span>
         <span class="n">image_label_info</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">label_dir</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">data_buf</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">if</span> <span class="n">mode</span> <span class="o">!=</span> <span class="s2">&quot;test&quot;</span><span class="p">:</span>
+            <span class="c1"># разбиение данных на тренировочную и валидационную выборки</span>
             <span class="n">train_subset</span><span class="p">,</span> <span class="n">val_subset</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span>
                 <span class="n">image_label_info</span><span class="p">,</span>
                 <span class="n">train_size</span><span class="o">=</span><span class="n">train_fraction</span><span class="p">,</span>
@@ -129,30 +162,37 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">data_buf</span> <span class="o">=</span> <span class="n">image_label_info</span>
 
-    <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get dataset length.&quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Вычисление длины датасета.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            int: Длина датасета.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_buf</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
-    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get dataset element.&quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Получение изображения и метки класса по индексу.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            index (int): Индекс элемента в датасете.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Tuple[torch.Tensor, torch.Tensor]: Изображение, метка класса</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># чтение названия изображения и названия класса из датафрейма</span>
         <span class="n">img_path</span><span class="p">,</span> <span class="n">label</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_buf</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
 
-        <span class="c1"># img_path = self.img_dir + &quot;/&quot; + img_path</span>
+        <span class="c1"># преобразовываем название класса в id класса</span>
+        <span class="n">label</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cls_name_to_id</span><span class="p">[</span><span class="n">label</span><span class="p">]</span>
+
+        <span class="c1"># получение полного пути до изображения</span>
         <span class="n">img_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">img_dir</span><span class="p">,</span> <span class="n">img_path</span><span class="p">)</span>
 
-        <span class="c1"># read image</span>
+        <span class="c1"># чтение изображения по данному пути</span>
         <span class="n">image</span> <span class="o">=</span> <span class="n">imread</span><span class="p">(</span><span class="n">img_path</span><span class="p">)</span>
 
-        <span class="c1"># image = Image.fromarray(image)</span>
-
+        <span class="c1"># применение аугментаций к изображению</span>
         <span class="n">image</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tfms</span><span class="p">(</span><span class="n">image</span><span class="o">=</span><span class="n">image</span><span class="p">)[</span><span class="s2">&quot;image&quot;</span><span class="p">]</span>
-
-        <span class="k">if</span> <span class="n">label</span> <span class="o">==</span> <span class="s2">&quot;twix&quot;</span><span class="p">:</span>
-            <span class="n">label</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="k">elif</span> <span class="n">label</span> <span class="o">==</span> <span class="s2">&quot;snickers&quot;</span><span class="p">:</span>
-            <span class="n">label</span> <span class="o">=</span> <span class="mi">1</span>
-        <span class="k">elif</span> <span class="n">label</span> <span class="o">==</span> <span class="s2">&quot;orbit&quot;</span><span class="p">:</span>
-            <span class="n">label</span> <span class="o">=</span> <span class="mi">2</span>
 
         <span class="k">return</span> <span class="n">image</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">long</span><span class="p">)</span></div>
 

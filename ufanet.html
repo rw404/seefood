@@ -51,7 +51,15 @@
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Пакет SeeFood</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#submodules">Подмодули</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#module-seefood.data">Модуль SeeFood.data</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#seefood.data.MyCustomDataset"><code class="docutils literal notranslate"><span class="pre">MyCustomDataset</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#seefood.data.MyCustomDataset"><code class="docutils literal notranslate"><span class="pre">MyCustomDataset</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#seefood.data.MyCustomDataset.mode"><code class="docutils literal notranslate"><span class="pre">MyCustomDataset.mode</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#seefood.data.MyCustomDataset.img_dir"><code class="docutils literal notranslate"><span class="pre">MyCustomDataset.img_dir</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#seefood.data.MyCustomDataset.tfms"><code class="docutils literal notranslate"><span class="pre">MyCustomDataset.tfms</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#seefood.data.MyCustomDataset.cls_name_to_id"><code class="docutils literal notranslate"><span class="pre">MyCustomDataset.cls_name_to_id</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#seefood.data.MyCustomDataset.label_name"><code class="docutils literal notranslate"><span class="pre">MyCustomDataset.label_name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#seefood.data.MyCustomDataset.data_buf"><code class="docutils literal notranslate"><span class="pre">MyCustomDataset.data_buf</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#module-seefood.model">Модуль SeeFood.model</a><ul>
@@ -107,9 +115,88 @@
 <dt class="sig sig-object py" id="seefood.data.MyCustomDataset">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">seefood.data.</span></span><span class="sig-name descname"><span class="pre">MyCustomDataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mode</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">img_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_root_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tfms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">train_fraction</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.8</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/seefood/data.html#MyCustomDataset"><span class="viewcode-link"><span class="pre">[исходный</span> <span class="pre">код]</span></span></a><a class="headerlink" href="#seefood.data.MyCustomDataset" title="Link to this definition"></a></dt>
 <dd><p>Базовые классы: <code class="xref py py-class docutils literal notranslate"><span class="pre">Dataset</span></code></p>
-<p>Класс набора данных</p>
+<p>Класс датасета для подгрузки данных.</p>
 <dl class="field-list simple">
 </dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="seefood.data.MyCustomDataset.mode">
+<span class="sig-name descname"><span class="pre">mode</span></span><a class="headerlink" href="#seefood.data.MyCustomDataset.mode" title="Link to this definition"></a></dt>
+<dd><p>Тип датасета: train, val, test</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="seefood.data.MyCustomDataset.img_dir">
+<span class="sig-name descname"><span class="pre">img_dir</span></span><a class="headerlink" href="#seefood.data.MyCustomDataset.img_dir" title="Link to this definition"></a></dt>
+<dd><p>Путь до директории с изображениями.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="seefood.data.MyCustomDataset.tfms">
+<span class="sig-name descname"><span class="pre">tfms</span></span><a class="headerlink" href="#seefood.data.MyCustomDataset.tfms" title="Link to this definition"></a></dt>
+<dd><p>Трансформации изображений.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>albumentations.Compose</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="seefood.data.MyCustomDataset.cls_name_to_id">
+<span class="sig-name descname"><span class="pre">cls_name_to_id</span></span><a class="headerlink" href="#seefood.data.MyCustomDataset.cls_name_to_id" title="Link to this definition"></a></dt>
+<dd><p>Словарь отображение названия класса в его метку.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">{</span></span></dt>
+<dd><p>„twix“ : 0,
+„snickers“ : 1,
+„orbit“: 2,</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">}</span></span></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="seefood.data.MyCustomDataset.label_name">
+<span class="sig-name descname"><span class="pre">label_name</span></span><a class="headerlink" href="#seefood.data.MyCustomDataset.label_name" title="Link to this definition"></a></dt>
+<dd><p>Название .csv файла с разметкой</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="seefood.data.MyCustomDataset.data_buf">
+<span class="sig-name descname"><span class="pre">data_buf</span></span><a class="headerlink" href="#seefood.data.MyCustomDataset.data_buf" title="Link to this definition"></a></dt>
+<dd><p>Данные из файла с разметкой в виде pd.DataFrame</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pd.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
 </dd></dl>
 
 </section>
