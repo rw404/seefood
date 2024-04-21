@@ -160,3 +160,6 @@ cython_debug/
 #.idea/
 
 docs/build/doctrees/
+/data
+/runs
+.DS_Store
