@@ -35,4 +35,4 @@ jobs:
 
       - name: Run tests
         run: |
-          poetry run pytest tests/unit/seefood_unit_tests.py   
+          poetry run pytest tests/unit/seefood_unit_tests.py
