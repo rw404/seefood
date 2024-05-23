@@ -16,7 +16,7 @@ pandas = "^2.2.1"
 scikit-learn = "^1.4.1.post1"
 torch = [
     { platform = "darwin", version = "2.2.2", source = "PyPi" },
-    { platform = "linux", version = "2.2.2+cpu", source = "pytorch_cpu" },
+    { platform = "linux", version = "2.2.2", source = "pytorch_cpu" },
     { platform = "win32", version = "2.2.2+cpu", source = "pytorch_cpu" }
 ]
 torchvision = "0.17.2"

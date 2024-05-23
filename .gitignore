@@ -163,4 +163,5 @@ docs/build/doctrees/
 node_modules
 /data
 /runs
+seefood/flagged/
 .DS_Store
