@@ -18,7 +18,7 @@
 2. Проверка функционала программы:
    - pytest
 3. Автоматическое обучение модели после обновления:
-   - [CML](https://cml.dev/) + [DVC](https://dvc.org/doc/api-reference)
+   - [DVC](https://dvc.org/doc/api-reference)
 4. Фреймворк обучения:
    - [Pytorch Lightning](https://lightning.ai/docs/pytorch/stable/)
 5. Применение модели:
