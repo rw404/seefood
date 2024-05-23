@@ -1,12 +1,12 @@
 [tool.poetry]
-name = "ufanet"
+name = "seefood"
 version = "0.1.1alpha"
 description = ""
 authors = []
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.11"
+python = "^3.9"
 albumentations = "^1.4.1"
 lightning = "^2.2.1"
 black = "^24.2.0"
@@ -21,6 +21,8 @@ torch = [
 ]
 torchvision = "0.17.2"
 dvc = {extras = ["gdrive"], version = "^3.50.0"}
+gradio = "^4.31.5"
+doit = "^0.36.0"
 
 
 [tool.poetry.group.dev.dependencies]
@@ -45,4 +47,4 @@ build-backend = "poetry.core.masonry.api"
 [[tool.poetry.source]]
 name = "pytorch_cpu"
 url = "https://download.pytorch.org/whl/cpu"
-priority = "supplemental"
+priority = "explicit"
