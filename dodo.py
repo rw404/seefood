@@ -7,6 +7,11 @@ def task_clean_untracked():
     }
 
 
-def task_doc():
-    """gen documentation"""
+def task_doc_ru():
+    """gen documentation (rus)"""
     return {"actions": ["""make -e -C docs/ SPHINXOPTS="-D language='ru'" html"""]}
+
+
+def task_doc_eng():
+    """gen documentation (eng)"""
+    return {"actions": ["""make -e -C docs/ html"""]}
