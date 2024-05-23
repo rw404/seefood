@@ -1,8 +1,10 @@
 import io
+import time
 
 import dvc.api
 import gradio as gr
 import torch
+from PIL import Image
 
 from .augs import get_augmentations_transformations
 from .model import UfaNet
