@@ -1,8 +1,9 @@
 import lightning as L
 from augs import get_augmentations_transformations
-from data import MyCustomDataset
 from model import UfaNet
 from torch.utils.data import DataLoader
+
+from data import MyCustomDataset
 
 
 def main() -> None:
