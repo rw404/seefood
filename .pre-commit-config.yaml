@@ -3,7 +3,7 @@ default_language_version:
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.6.0
+    rev: v6.0.0
     hooks:
       - id: check-yaml
       - id: check-json
@@ -13,25 +13,25 @@ repos:
       - id: check-case-conflict
       - id: mixed-line-ending
 
-  - repo: https://github.com/psf/black
-    rev: 24.4.2
+  - repo: https://github.com/psf/black-pre-commit-mirror
+    rev: 26.5.1
     hooks:
       - id: black
 
   - repo: https://github.com/PyCQA/isort
-    rev: 5.13.2
+    rev: 9.0.1
     hooks:
       - id: isort
 
   - repo: https://github.com/pycqa/flake8
-    rev: 7.0.0
+    rev: 7.3.0
     hooks:
       - id: flake8
         additional_dependencies: [flake8-bugbear]
         args: [--max-line-length=88] # black style
 
   - repo: https://github.com/nbQA-dev/nbQA
-    rev: 1.8.5
+    rev: 1.9.1
     hooks:
       - id: nbqa-black
         additional_dependencies: [black==22.3.0]
